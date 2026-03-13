@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합과학 1단원 마스터 방탈출 (100제)</title>
+    
+    <!-- 스타일(Tailwind CSS) 로드 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        body { font-family: 'Pretendard', 'Malgun Gothic', sans-serif; }
+    </style>
+
+    <!-- React 및 Babel 로드 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-indigo-50 text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // 아이콘 SVG 컴포넌트
+        const IconFlask = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><path d="M5.52 16h12.96"></path></svg>;
+        const IconAward = () => <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>;
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconCheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+        const IconXCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+        const IconChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>;
+
+        // 100문제 데이터베이스
+        const QUESTIONS = [
+            // --- [제1구역: 물리량과 단위 (25문제)] ---
+            { stage: "제1구역: 물리량과 단위", text: "다음 중 SI 기본 단위에 해당하는 물리량이 아닌 것은?", options: ["질량", "길이", "넓이", "온도"], answer: 2, explanation: "넓이는 길이를 두 번 곱한 유도량이며, SI 기본 단위(7가지)에 속하지 않습니다." },
+            { stage: "제1구역: 물리량과 단위", text: "빛의 밝기인 '광도'를 나타내는 SI 기본 단위의 기호는?", options: ["A", "cd", "K", "mol"], answer: 1, explanation: "광도의 기본 단위는 칸델라(cd)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "국제단위계(SI)의 기본량 종류는 모두 몇 가지인가요?", options: ["5가지", "6가지", "7가지", "8가지"], answer: 2, explanation: "SI 기본량은 길이, 질량, 시간, 전류, 온도, 물질량, 광도 총 7가지입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "시간의 기본 단위는 무엇인가요?", options: ["h (시간)", "m (분)", "s (초)", "ms (밀리초)"], answer: 2, explanation: "시간의 SI 기본 단위는 초(s)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "물질의 양을 나타내는 기본량인 '물질량'의 단위는?", options: ["g (그램)", "mol (몰)", "L (리터)", "cd (칸델라)"], answer: 1, explanation: "물질량의 단위는 몰(mol)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "SI 기본 단위 중 유일하게 접두어가 이미 포함되어 있는 단위는?", options: ["m (미터)", "s (초)", "A (암페어)", "kg (킬로그램)"], answer: 3, explanation: "질량의 기본 단위는 g(그램)이 아니라 k(킬로)가 붙은 kg(킬로그램)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "온도의 SI 기본 단위로 옳은 것은?", options: ["°C (섭씨)", "°F (화씨)", "K (켈빈)", "J (줄)"], answer: 2, explanation: "온도의 기본 단위는 절대온도인 켈빈(K)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "다음 중 기본 단위와 물리량이 바르게 연결된 것은?", options: ["전류 - V", "온도 - °C", "길이 - km", "질량 - kg"], answer: 3, explanation: "전류는 A, 온도는 K, 길이는 m가 기본 단위이며, 질량은 kg이 맞습니다." },
+            { stage: "제1구역: 물리량과 단위", text: "가장 기본이 되는 물리량을 '기본량'이라 하고, 이를 조합하여 만든 물리량을 무엇이라 하나요?", options: ["절대량", "상대량", "유도량", "보조량"], answer: 2, explanation: "기본량을 조합하여 만든 속력, 넓이 등은 '유도량'이라고 합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "미세먼지 농도의 단위로 알맞은 것은?", options: ["μg/m³", "mg/L", "g/cm³", "kg/m²"], answer: 0, explanation: "대기 중 미세먼지 농도는 부피당 질량인 μg/m³ (마이크로그램 퍼 세제곱미터)를 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "길이를 측정할 때 사용하는 SI 기본 단위의 기호는?", options: ["km", "m", "cm", "mm"], answer: 1, explanation: "길이의 SI 기본 단위는 미터(m)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "질량의 SI 기본 단위 기호는 무엇인가요?", options: ["mg", "g", "kg", "t"], answer: 2, explanation: "질량의 SI 기본 단위는 킬로그램(kg)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "전류를 나타내는 SI 기본 단위 기호는?", options: ["V", "W", "A", "Ω"], answer: 2, explanation: "전류의 SI 기본 단위는 암페어(A)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "열역학 온도를 나타내는 SI 기본 단위 기호는?", options: ["K", "°C", "F", "cal"], answer: 0, explanation: "온도의 SI 기본 단위는 켈빈(K)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "다음 중 SI 기본 단위에 속하지 않는 것은?", options: ["칸델라(cd)", "몰(mol)", "켈빈(K)", "뉴턴(N)"], answer: 3, explanation: "뉴턴(N)은 힘을 나타내는 유도 단위입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "단위 기호 중 과학자의 이름을 따서 대문자로 표기하는 것이 아닌 것은?", options: ["A (암페어)", "K (켈빈)", "N (뉴턴)", "m (미터)"], answer: 3, explanation: "미터(m)는 과학자 이름에서 유래하지 않아 소문자를 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "화학에서 입자의 개수나 물질의 양을 나타낼 때 사용하는 단위는?", options: ["g", "mol", "L", "M"], answer: 1, explanation: "물질의 양(입자의 수)은 몰(mol)을 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "1 mol(몰)은 약 6.02 × 10²³개의 입자를 의미합니다. 이 단위가 나타내는 물리량의 이름은?", options: ["질량", "물질량", "광도", "밀도"], answer: 1, explanation: "몰(mol)은 '물질량'을 나타내는 단위입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "빛의 밝기를 나타내는 칸델라의 영문 기호 표기로 옳은 것은?", options: ["cn", "cd", "cl", "ca"], answer: 1, explanation: "칸델라는 cd 로 표기합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "다음 중 유도 단위에 해당하는 것은?", options: ["초(s)", "미터(m)", "킬로그램(kg)", "제곱미터(m²)"], answer: 3, explanation: "제곱미터(m²)는 길이를 두 번 곱한 유도 단위입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "부피를 나타내는 유도 단위로 가장 올바른 것은?", options: ["m", "m²", "m³", "kg/m³"], answer: 2, explanation: "부피는 가로×세로×높이이므로 세제곱미터(m³)입니다." },
+            { stage: "제1구역: 물리량과 단위", text: "물체의 빠르기인 '속력'을 나타내는 유도 단위는?", options: ["m/s", "s/m", "m/s²", "kg·m/s"], answer: 0, explanation: "속력은 거리 나누기 시간이므로 m/s를 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "밀도를 나타내는 유도 단위로 적절하게 조합된 것은?", options: ["m/s", "kg/m³", "N/m²", "J/s"], answer: 1, explanation: "밀도는 질량 나누기 부피이므로 kg/m³ 를 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "전 세계적으로 국제단위계(SI)를 공통으로 사용하는 가장 큰 이유는?", options: ["계산이 복잡해지기 때문", "과학자들만의 암호를 만들기 위해", "의사소통의 혼란을 막고 정보를 정확히 교환하기 위해", "전통 단위를 보존하기 위해"], answer: 2, explanation: "나라마다 단위가 다르면 혼란이 발생하므로 전 세계가 통일된 SI 단위를 사용합니다." },
+            { stage: "제1구역: 물리량과 단위", text: "SI 기본 물리량 7가지에 포함되지 않는 물리량은?", options: ["질량", "길이", "시간", "부피"], answer: 3, explanation: "부피는 기본량이 아니라 유도량입니다." },
+
+            // --- [제2구역: 접두어 (40문제)] ---
+            { stage: "제2구역: 단위의 접두어", text: "접두사 k(킬로)는 10의 몇 제곱을 의미하나요?", options: ["10²", "10³", "10⁶", "10⁹"], answer: 1, explanation: "킬로(k)는 10³ (1,000)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁶ 을 의미하는 접두사 M의 이름은?", options: ["밀리", "마이크로", "메가", "기가"], answer: 2, explanation: "10⁶은 메가(Mega)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻⁹ (10의 -9제곱)을 의미하는 접두사의 기호는?", options: ["m", "μ", "n", "p"], answer: 2, explanation: "10⁻⁹은 나노(nano, n)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "접두사 μ(마이크로)는 10의 몇 제곱을 의미하나요?", options: ["10⁻³", "10⁻⁶", "10⁻⁹", "10⁻¹²"], answer: 1, explanation: "마이크로(μ)는 10⁻⁶ 을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "접두사 m(밀리)는 10의 몇 제곱을 의미하나요?", options: ["10⁻¹", "10⁻²", "10⁻³", "10⁻⁶"], answer: 2, explanation: "밀리(m)는 10⁻³ (1/1000)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "다음 중 가장 큰 값을 나타내는 접두사는?", options: ["k (킬로)", "M (메가)", "G (기가)", "T (테라)"], answer: 3, explanation: "테라(T)는 10¹²로 가장 큽니다. (k=10³, M=10⁶, G=10⁹)" },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻¹² 을 의미하는 접두사 p의 이름은?", options: ["피코", "나노", "데시", "센티"], answer: 0, explanation: "10⁻¹²은 피코(pico, p)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "접두사 c(센티)는 10의 몇 제곱을 의미하나요?", options: ["10¹", "10⁻¹", "10⁻²", "10⁻³"], answer: 2, explanation: "센티(c)는 10⁻² (1/100)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10¹ (10)을 의미하는 접두사 da의 이름은?", options: ["데시", "데카", "헥토", "킬로"], answer: 1, explanation: "10¹은 데카(da)입니다. (데시는 10⁻¹인 d 입니다)" },
+            { stage: "제2구역: 단위의 접두어", text: "10² (100)을 의미하는 접두사 h의 이름은?", options: ["헥토", "데카", "센티", "밀리"], answer: 0, explanation: "10²은 헥토(h)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "테라(T)는 10의 몇 제곱인가요?", options: ["10⁶", "10⁹", "10¹²", "10¹⁵"], answer: 2, explanation: "테라(T)는 10¹²을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기가(G)는 10의 몇 제곱인가요?", options: ["10⁶", "10⁹", "10¹²", "10¹⁵"], answer: 1, explanation: "기가(G)는 10⁹을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "메가(M)는 10의 몇 제곱인가요?", options: ["10³", "10⁶", "10⁹", "10¹²"], answer: 1, explanation: "메가(M)는 10⁶을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "데시(d)는 10의 몇 제곱인가요?", options: ["10¹", "10⁻¹", "10⁻²", "10⁻³"], answer: 1, explanation: "데시(d)는 10⁻¹ (0.1)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "데카(da)는 10의 몇 제곱인가요?", options: ["10¹", "10²", "10⁻¹", "10⁻²"], answer: 0, explanation: "데카(da)는 10¹ (10)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "헥토(h)는 10의 몇 제곱인가요?", options: ["10¹", "10²", "10³", "10⁻²"], answer: 1, explanation: "헥토(h)는 10² (100)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻⁶ 을 의미하는 접두어의 한글 이름은 무엇인가요?", options: ["밀리", "마이크로", "나노", "피코"], answer: 1, explanation: "10⁻⁶ 은 마이크로(μ)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10³ 을 의미하는 접두어의 한글 이름은 무엇인가요?", options: ["헥토", "킬로", "메가", "기가"], answer: 1, explanation: "10³ 은 킬로(k)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻² 을 의미하는 접두어의 한글 이름은 무엇인가요?", options: ["데시", "센티", "밀리", "마이크로"], answer: 1, explanation: "10⁻² 은 센티(c)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻⁹ 를 의미하는 접두어의 한글 이름은 무엇인가요?", options: ["마이크로", "나노", "피코", "펨토"], answer: 1, explanation: "10⁻⁹ 은 나노(n)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "10⁻¹² 를 의미하는 접두어의 한글 이름은 무엇인가요?", options: ["마이크로", "나노", "피코", "펨토"], answer: 2, explanation: "10⁻¹² 은 피코(p)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "다음 중 값이 가장 작은 접두어는?", options: ["밀리(m)", "마이크로(μ)", "나노(n)", "피코(p)"], answer: 3, explanation: "피코(p)는 10⁻¹² 로 가장 작습니다." },
+            { stage: "제2구역: 단위의 접두어", text: "다음 중 값이 가장 큰 접두어는?", options: ["킬로(k)", "메가(M)", "기가(G)", "테라(T)"], answer: 3, explanation: "테라(T)는 10¹² 로 가장 큽니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 기가바이트(GB)는 1 메가바이트(MB)의 몇 배인가요?", options: ["10배", "100배", "1000배", "10000배"], answer: 2, explanation: "기가(10⁹)는 메가(10⁶)의 10³배, 즉 1000배입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 테라바이트(TB)는 1 기가바이트(GB)의 몇 배인가요?", options: ["10배", "100배", "1000배", "10000배"], answer: 2, explanation: "테라(10¹²)는 기가(10⁹)의 10³배, 즉 1000배입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 나노미터(nm)는 1 마이크로미터(μm)의 몇 배인가요?", options: ["10⁻¹배", "10⁻²배", "10⁻³배", "10⁻⁶배"], answer: 2, explanation: "나노(10⁻⁹)는 마이크로(10⁻⁶)의 10⁻³배(1/1000)입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 밀리미터(mm)는 1 미터(m)의 몇 배인가요?", options: ["10⁻¹배", "10⁻²배", "10⁻³배", "10⁻⁶배"], answer: 2, explanation: "밀리(m)는 10⁻³배(1/1000)를 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "태풍의 기압을 나타내는 '헥토파스칼(hPa)'에서 '헥토(h)'의 크기는?", options: ["10배", "100배", "1000배", "1/100배"], answer: 1, explanation: "헥토(h)는 10²(100)을 의미합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "접두어 c(센티)는 m(밀리)의 몇 배 큰가요?", options: ["2배", "10배", "100배", "1000배"], answer: 1, explanation: "센티(10⁻²)는 밀리(10⁻³)보다 10¹(10)배 큽니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'μ'로 표시하는 접두어의 올바른 읽는 법은?", options: ["밀리", "마이크로", "뮤", "메가"], answer: 1, explanation: "그리스 문자 μ를 쓰고 마이크로(micro)라고 읽습니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'n'으로 표시하는 접두어의 이름은?", options: ["나노", "니트로", "나인", "뉴턴"], answer: 0, explanation: "기호 n은 나노(nano)를 뜻합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'p'로 표시하는 접두어의 이름은?", options: ["파스칼", "피코", "펨토", "페타"], answer: 1, explanation: "기호 p는 피코(pico)를 뜻합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'T'로 표시하는 접두어의 이름은?", options: ["테슬라", "테라", "톤", "타키온"], answer: 1, explanation: "기호 T는 테라(tera)를 뜻합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'G'로 표시하는 접두어의 이름은?", options: ["그램", "기가", "가우스", "갈릴레오"], answer: 1, explanation: "기호 G는 기가(giga)를 뜻합니다." },
+            { stage: "제2구역: 단위의 접두어", text: "기호 'M'으로 표시하는 접두어의 이름은?", options: ["밀리", "마이크로", "메가", "미터"], answer: 2, explanation: "대문자 M은 메가(mega)를 뜻합니다. (소문자 m은 밀리)" },
+            { stage: "제2구역: 단위의 접두어", text: "1 센티미터(cm)는 1 밀리미터(mm)의 몇 배인가요?", options: ["1배", "10배", "100배", "1000배"], answer: 1, explanation: "1 cm = 10 mm 이므로 10배입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "접두어 없이 기본 단위만 쓸 때(예: m, g)는 10의 몇 제곱을 생략한 것과 같나요?", options: ["10⁰", "10¹", "10⁻¹", "10²"], answer: 0, explanation: "10⁰은 1을 의미하므로, 배율이 변하지 않은 원래 상태입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 메가미터(Mm)는 몇 킬로미터(km)와 같나요?", options: ["10 km", "100 km", "1000 km", "10000 km"], answer: 2, explanation: "메가(10⁶)는 킬로(10³)의 10³배, 즉 1000배이므로 1000 km 입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 밀리초(ms)는 몇 초(s)와 같나요?", options: ["0.1초", "0.01초", "0.001초", "0.0001초"], answer: 2, explanation: "밀리(m)는 10⁻³ 이므로 0.001초입니다." },
+            { stage: "제2구역: 단위의 접두어", text: "1 나노초(ns)는 1 밀리초(ms)의 몇 배인가요?", options: ["10⁻³배", "10⁻⁶배", "10⁻⁹배", "10⁻¹²배"], answer: 1, explanation: "나노(10⁻⁹)는 밀리(10⁻³)의 10⁻⁶배입니다." },
+
+            // --- [제3구역: 거시와 미시 세계 (15문제)] ---
+            { stage: "제3구역: 거시와 미시 세계", text: "사과나무나 태풍 같이 일상생활에서 경험하는 규모의 세계를 무엇이라 하나요?", options: ["거시 세계", "미시 세계", "가상 세계", "양자 세계"], answer: 0, explanation: "우리가 일상에서 눈으로 보고 경험하는 규모는 '거시 세계'입니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "원자나 전자처럼 매우 작은 규모의 세계를 무엇이라 하나요?", options: ["거시 세계", "미시 세계", "상대성 세계", "거대 세계"], answer: 1, explanation: "원자, 분자 등 눈에 보이지 않는 작은 규모는 '미시 세계'입니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "다음 중 미시 세계에 대한 설명으로 옳은 것은?", options: ["눈으로 직접 관찰할 수 있다.", "뉴턴의 운동 법칙으로 완벽히 설명된다.", "전자의 물질파를 이용한 전자 현미경으로 관찰한다.", "태풍, 해류 등의 현상이 여기에 속한다."], answer: 2, explanation: "미시 세계는 가시광선보다 파장이 짧은 물질파를 이용하는 전자 현미경 등으로 관찰하며, 뉴턴 역학이 아닌 양자역학이 필요합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "현대에 아주 정밀하게 '시간'을 측정하기 위해 이용하는 장치는?", options: ["앙부일구", "모래시계", "진자시계", "세슘 원자 시계"], answer: 3, explanation: "현대에는 세슘 원자의 진동을 이용하는 세슘 원자 시계로 매우 정밀하게 시간을 측정합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "빛이 우주 공간을 왕복하는 데 걸리는 시간을 이용해 측정할 수 있는 물리량은?", options: ["질량", "온도", "거리", "전류"], answer: 2, explanation: "빛의 속력은 일정하므로, 왕복 시간을 측정하면 천체 간의 '거리'를 알 수 있습니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "눈으로 직접 관찰하거나 자, 저울 등 일상적인 측정 도구로 측정 가능한 세계는?", options: ["미시 세계", "거시 세계", "양자 세계", "입자 세계"], answer: 1, explanation: "일상적인 도구로 측정 가능한 큰 세계는 거시 세계입니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "원자, 전자, DNA 분자 등을 다루는 아주 작은 규모의 세계는?", options: ["거시 세계", "우주 세계", "미시 세계", "다중 우주"], answer: 2, explanation: "보이지 않는 원자 단위의 작은 세계를 미시 세계라고 합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "다음 중 거시 세계의 물리 현상을 설명하는 데 주로 사용되는 이론은?", options: ["양자 역학", "초끈 이론", "뉴턴의 운동 법칙", "소립자 물리학"], answer: 2, explanation: "거시 세계의 움직임은 갈릴레이와 뉴턴의 역학(고전 역학)으로 잘 설명됩니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "다음 중 미시 세계의 물리 현상을 설명하는 데 필수적인 이론은?", options: ["양자 역학", "뉴턴의 운동 법칙", "열역학 제2법칙", "관성의 법칙"], answer: 0, explanation: "미시 세계에서는 고전 역학이 맞지 않아 '양자 역학'이 필요합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "미시 세계의 아주 작은 물체를 관찰하기 위해 빛 대신 전자의 파동성을 이용하는 기기는?", options: ["광학 현미경", "망원경", "전자 현미경", "레이저 포인터"], answer: 2, explanation: "가시광선 파장보다 작은 물체는 전자의 물질파를 이용한 '전자 현미경'으로 봅니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "가장 정밀하게 1초를 정의하기 위해 세슘-133 원자의 무엇을 이용하나요?", options: ["질량", "부피", "색깔", "고유한 진동"], answer: 3, explanation: "세슘 원자에서 방출되는 복사선의 고유한 진동 주기를 이용해 시간을 정의합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "천문학에서 달이나 별까지의 아주 먼 거리를 측정할 때 기준이 되는 것은 무엇의 속력인가요?", options: ["소리(음파)", "빛(전자기파)", "지진파", "해류"], answer: 1, explanation: "빛의 속력(약 30만 km/s)은 우주에서 일정하므로 이를 이용해 거리를 측정합니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "다음 중 거시 세계에 속하는 현상은?", options: ["전자의 이동", "원자핵의 분열", "태풍의 이동", "광자의 충돌"], answer: 2, explanation: "태풍의 이동은 눈에 보이고 큰 규모이므로 거시 세계 현상입니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "다음 중 미시 세계에 속하는 대상은?", options: ["사과나무", "지구", "태양계", "원자"], answer: 3, explanation: "원자는 매우 작은 미시 세계의 대상입니다." },
+            { stage: "제3구역: 거시와 미시 세계", text: "1 광년(ly)은 빛이 진공 속에서 1년 동안 진행한 거리를 말합니다. 이는 어떤 규모의 세계에서 주로 사용되나요?", options: ["거시 세계(우주)", "미시 세계(원자)", "생명 세계(세포)", "양자 세계"], answer: 0, explanation: "광년은 별과 별 사이의 엄청난 거리를 다루는 거시 세계(우주) 단위입니다." },
+
+            // --- [제4구역: 단위 변환 및 실전 응용 (20문제)] ---
+            { stage: "제4구역: 실전 응용 계산", text: "수영 선수가 50 m를 헤엄쳐 가는 데 25초가 걸렸습니다. 이 선수의 평균 속력은?", options: ["1 m/s", "2 m/s", "5 m/s", "10 m/s"], answer: 1, explanation: "속력 = 거리 ÷ 시간 = 50m ÷ 25s = 2 m/s 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "부피가 20 m³인 방에 미세먼지가 100 μg 들어있습니다. 미세먼지의 농도는?", options: ["2 μg/m³", "5 μg/m³", "10 μg/m³", "20 μg/m³"], answer: 1, explanation: "농도 = 질량 ÷ 부피 = 100μg ÷ 20m³ = 5 μg/m³ 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "농도가 5 %인 포도당 용액 400 g 속에 들어 있는 포도당의 질량은?", options: ["5 g", "10 g", "20 g", "40 g"], answer: 2, explanation: "400g의 5%는 400 × 0.05 = 20g 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "1 t(톤)은 몇 kg 과 같을까요?", options: ["10 kg", "100 kg", "10³ kg", "10⁶ kg"], answer: 2, explanation: "1 톤(t)은 1,000 kg, 즉 10³ kg 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "진동수를 나타내는 유도 단위 Hz(헤르츠)를 SI 기본 단위로 올바르게 변환한 것은?", options: ["s", "s⁻¹", "m/s", "kg/s"], answer: 1, explanation: "진동수는 1초 동안 진동한 횟수(1/s)이므로 s⁻¹ 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "질량 1 kg은 몇 g으로 환산되나요?", options: ["10 g", "100 g", "1000 g", "10000 g"], answer: 2, explanation: "킬로(k)는 1000을 의미하므로 1 kg = 1000 g 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "길이 2 m는 몇 cm로 환산되나요?", options: ["20 cm", "200 cm", "2000 cm", "0.02 cm"], answer: 1, explanation: "1 m = 100 cm 이므로 2 m = 200 cm 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "시간 1 시간(h)은 몇 초(s)인가요?", options: ["60 s", "360 s", "3600 s", "36000 s"], answer: 2, explanation: "1시간 = 60분 = 60 × 60초 = 3600초 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "1 km는 몇 m 인가요?", options: ["10 m", "100 m", "1000 m", "10000 m"], answer: 2, explanation: "킬로(k)는 1000이므로 1 km = 1000 m 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "500 mL는 몇 L로 환산되나요?", options: ["0.05 L", "0.5 L", "5 L", "50 L"], answer: 1, explanation: "밀리(m)는 1/1000이므로 500 mL = 0.5 L 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "자동차가 36 km/h로 달립니다. 이 속력을 m/s로 환산하면?", options: ["1 m/s", "10 m/s", "36 m/s", "100 m/s"], answer: 1, explanation: "36 km = 36000 m, 1시간 = 3600 s. 따라서 36000m / 3600s = 10 m/s 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "밀도가 1 g/cm³ 인 물 500 cm³ 의 질량은 얼마인가요?", options: ["5 g", "50 g", "500 g", "5000 g"], answer: 2, explanation: "질량 = 밀도 × 부피 = 1 × 500 = 500 g 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "질량 50 kg인 학생의 몸무게를 g 단위로 올바르게 나타낸 것은?", options: ["5,000 g", "50,000 g", "500,000 g", "5,000,000 g"], answer: 1, explanation: "50 kg = 50 × 1000 g = 50,000 g 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "컴퓨터 저장 용량 2 GB(기가바이트)는 몇 MB(메가바이트)인가요?", options: ["20 MB", "200 MB", "2000 MB", "20000 MB"], answer: 2, explanation: "1 GB = 1000 MB 이므로 2 GB = 2000 MB 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "진동수 5 GHz(기가헤르츠)는 몇 Hz 인가요?", options: ["5 × 10⁶ Hz", "5 × 10⁹ Hz", "5 × 10¹² Hz", "5 × 10¹⁵ Hz"], answer: 1, explanation: "기가(G)는 10⁹ 을 의미하므로 5 × 10⁹ Hz 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "10 nm(나노미터) 길이를 m 단위로 나타내면?", options: ["10⁻⁷ m", "10⁻⁸ m", "10⁻⁹ m", "10⁻¹⁰ m"], answer: 1, explanation: "10 nm = 10 × 10⁻⁹ m = 10⁻⁸ m 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "2000 mm 길이를 m 단위로 나타내면?", options: ["0.2 m", "2 m", "20 m", "200 m"], answer: 1, explanation: "밀리(m)가 1/1000이므로 2000 mm = 2 m 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "부피 1 m³ 는 몇 L 인가요?", options: ["10 L", "100 L", "1000 L", "10000 L"], answer: 2, explanation: "1 m³ = 1000 L 입니다. (가로 세로 높이 10cm인 1L 큐브가 1000개 들어갑니다)" },
+            { stage: "제4구역: 실전 응용 계산", text: "농도가 10 %인 소금물 300 g에 녹아있는 소금의 질량은?", options: ["3 g", "10 g", "30 g", "300 g"], answer: 2, explanation: "300g × 0.10 = 30 g 입니다." },
+            { stage: "제4구역: 실전 응용 계산", text: "면적 1 km² 는 몇 m² 인가요?", options: ["10³ m²", "10⁴ m²", "10⁵ m²", "10⁶ m²"], answer: 3, explanation: "1 km = 10³ m 이고, 면적은 제곱이므로 (10³)² = 10⁶ m² 입니다." }
+        ];
+
+        // 매 게임마다 100문제 중 10문제만 무작위 출제 (수정 가능)
+        const QUESTIONS_PER_GAME = 10; 
+
+        function App() {
+            const [gameState, setGameState] = useState('start'); 
+            const [gameQuestions, setGameQuestions] = useState([]);
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isCorrect, setIsCorrect] = useState(false);
+
+            const startGame = () => {
+                // 100문제 배열을 무작위로 섞은 후 앞에서부터 QUESTIONS_PER_GAME 개수만큼 자름
+                const shuffled = [...QUESTIONS].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_GAME);
+                setGameQuestions(shuffled);
+                setGameState('playing');
+                setCurrentQIndex(0);
+                setScore(0);
+            };
+
+            const handleOptionClick = (index) => {
+                if (gameState !== 'playing') return;
+                
+                const currentQuestion = gameQuestions[currentQIndex];
+                const correct = index === currentQuestion.answer;
+                setSelectedOption(index);
+                setIsCorrect(correct);
+                if (correct) setScore(prev => prev + 1);
+                
+                setGameState('feedback');
+            };
+
+            const handleNext = () => {
+                if (currentQIndex < gameQuestions.length - 1) {
+                    setCurrentQIndex(prev => prev + 1);
+                    setSelectedOption(null);
+                    setGameState('playing');
+                } else {
+                    setGameState('result');
+                }
+            };
+
+            const getResultAnalysis = () => {
+                if (score === gameQuestions.length) return { title: "A+ 과학 인재", desc: "통합과학 1단원의 단위와 규모를 완벽히 마스터했습니다! 거시/미시 세계의 비밀을 풀 준비가 되었습니다.", color: "text-blue-600", bg: "bg-blue-100" };
+                if (score >= gameQuestions.length * 0.7) return { title: "훌륭한 탐구자", desc: "기본 개념을 잘 이해하고 있습니다! 헷갈린 접두어나 단위를 교과서에서 한 번만 더 확인해 보세요.", color: "text-green-600", bg: "bg-green-100" };
+                return { title: "단위 훈련병", desc: "물리량과 단위, 접두어 기호가 아직 낯설 수 있습니다. 교과서 18~19페이지의 표를 다시 외워보고 도전해 보세요!", color: "text-orange-600", bg: "bg-orange-100" };
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+                        
+                        <div className="bg-indigo-700 p-4 text-center text-white">
+                            <h1 className="text-xl font-bold flex items-center justify-center gap-2">
+                                <IconFlask />
+                                통합과학 개념 방탈출
+                            </h1>
+                        </div>
+
+                        {gameState === 'start' && (
+                            <div className="p-8 text-center flex flex-col items-center">
+                                <div className="text-indigo-600 mb-6 bg-indigo-100 p-4 rounded-full">
+                                    <IconAward />
+                                </div>
+                                <h2 className="text-2xl font-bold mb-4">1단원 마스터 퀘스트</h2>
+                                <p className="text-slate-600 mb-8 leading-relaxed">
+                                    총 100개의 데이터베이스 중 무작위로 <strong>{QUESTIONS_PER_GAME}문제</strong>가 출제됩니다.<br/>
+                                    기본 단위, 접두어, 세계의 규모 암호를 해독하세요!
+                                </p>
+                                <button 
+                                    onClick={startGame}
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-indigo-200"
+                                >
+                                    <IconPlay /> 도전 시작하기
+                                </button>
+                            </div>
+                        )}
+
+                        {(gameState === 'playing' || gameState === 'feedback') && (
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-4 text-sm font-medium text-slate-500">
+                                    <span className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold">
+                                        {gameQuestions[currentQIndex].stage}
+                                    </span>
+                                    <span>{currentQIndex + 1} / {gameQuestions.length}</span>
+                                </div>
+                                
+                                <div className="w-full bg-slate-100 h-2 rounded-full mb-6 overflow-hidden">
+                                    <div 
+                                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${((currentQIndex) / gameQuestions.length) * 100}%` }}
+                                    ></div>
+                                </div>
+
+                                <h2 className="text-xl font-bold mb-6 leading-tight">
+                                    {gameQuestions[currentQIndex].text}
+                                </h2>
+
+                                <div className="space-y-3">
+                                    {gameQuestions[currentQIndex].options.map((option, index) => {
+                                        let buttonStyle = "border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 text-slate-700";
+                                        
+                                        if (gameState === 'feedback') {
+                                            if (index === gameQuestions[currentQIndex].answer) {
+                                                buttonStyle = "border-green-500 bg-green-50 text-green-700 font-bold";
+                                            } else if (index === selectedOption) {
+                                                buttonStyle = "border-red-500 bg-red-50 text-red-700";
+                                            } else {
+                                                buttonStyle = "border-slate-200 opacity-50";
+                                            }
+                                        }
+
+                                        return (
+                                            <button
+                                                key={index}
+                                                disabled={gameState === 'feedback'}
+                                                onClick={() => handleOptionClick(index)}
+                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all ${buttonStyle}`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-lg">{option}</span>
+                                                    {gameState === 'feedback' && index === gameQuestions[currentQIndex].answer && <span className="text-green-500"><IconCheckCircle /></span>}
+                                                    {gameState === 'feedback' && index === selectedOption && index !== gameQuestions[currentQIndex].answer && <span className="text-red-500"><IconXCircle /></span>}
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {gameState === 'feedback' && (
+                                    <div className="mt-6 animate-fade-in">
+                                        <div className={`p-4 rounded-xl ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                            <p className="font-bold mb-1">{isCorrect ? '정답입니다! 🎉' : '아쉽네요! 💦'}</p>
+                                            <p className="text-sm leading-relaxed">{gameQuestions[currentQIndex].explanation}</p>
+                                        </div>
+                                        <button 
+                                            onClick={handleNext}
+                                            className="mt-6 w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                                        >
+                                            다음 문제로 <IconChevronRight />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {gameState === 'result' && (() => {
+                            const analysis = getResultAnalysis();
+                            return (
+                                <div className="p-8 text-center flex flex-col items-center animate-fade-in">
+                                    <h2 className="text-2xl font-bold mb-2">테스트 결과</h2>
+                                    <div className="text-6xl font-black text-indigo-600 mb-6">
+                                        {score} <span className="text-2xl text-slate-400">/ {gameQuestions.length}</span>
+                                    </div>
+                                    
+                                    <div className={`w-full p-6 rounded-2xl mb-8 ${analysis.bg}`}>
+                                        <h3 className={`text-xl font-bold mb-2 ${analysis.color}`}>
+                                            {analysis.title}
+                                        </h3>
+                                        <p className="text-slate-700 text-sm leading-relaxed">
+                                            {analysis.desc}
+                                        </p>
+                                    </div>
+
+                                    <button 
+                                        onClick={startGame}
+                                        className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+                                    >
+                                        <IconRefresh /> 다시 풀기 (다른 문제)
+                                    </button>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
